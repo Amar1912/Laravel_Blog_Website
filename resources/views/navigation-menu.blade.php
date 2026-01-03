@@ -5,14 +5,19 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('home') }}">
+                    {{-- Link to the public homepage named 'home.homepage'.
+                         We updated the main nav to point here so the site logo and 'Home' link
+                         land on the post-login/public homepage where the Logout button is shown. --}}
+                    <a href="{{ route('home.homepage') }}">
                         <x-application-mark class="block h-9 w-auto" />
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-            <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">
+            {{-- Primary nav link pointing to the public homepage (named 'home.homepage').
+                 Active check updated to match the named route so the link highlights correctly. --}}
+            <x-nav-link href="{{ route('home.homepage') }}" :active="request()->routeIs('home.homepage')">
                         {{ __('home') }}
                     </x-nav-link>
                 </div>
@@ -139,7 +144,8 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">
+            {{-- Responsive mobile nav: points to the public homepage so mobile users land on the post-login page as well. --}}
+            <x-responsive-nav-link href="{{ route('home.homepage') }}" :active="request()->routeIs('home.homepage')">
                 {{ __('home') }}
             </x-responsive-nav-link>
         </div>

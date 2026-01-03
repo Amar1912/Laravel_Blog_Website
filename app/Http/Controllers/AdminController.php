@@ -18,13 +18,11 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
-        $usertype = Auth::user()->usertype;
-
-        if ($usertype === 'admin') {
-            return redirect()->route('admin.index');
-        }
-
-        return redirect()->route('dashboard');
+        // NOTE: This method is used as a login redirect handler.
+        // Previous behavior differentiated admin vs normal users and redirected to different dashboards.
+        // Current behavior: send authenticated users (both admin and normal) to the public homepage
+        // ('home.homepage') so the header/menu logic can consistently show Logout and hide Login/Register.
+        return redirect()->route('home.homepage');
     }
 
     // Public homepage (GitHub HTML template)

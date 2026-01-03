@@ -2,8 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminsecController; // Corrected namespace casing and imported AdminsecController
 
-Route::get('/', [App\Http\Controllers\AdminController::class, 'homepage']);
+// Public homepage route (named 'home.homepage').
+// We use this route as the post-login landing page for ALL authenticated users (admins and normal users).
+// This ensures consistent UX: after login the user sees the public homepage and the header shows a Logout button
+// while hiding the Login/Register links.
+Route::get('/', [App\Http\Controllers\AdminController::class, 'homepage'])->name('home.homepage');
 
 
 Route::middleware([
@@ -33,4 +38,17 @@ Route::middleware([
 
     // LOGIN REDIRECT HANDLER
     Route::get('/home', [AdminController::class, 'index'])->name('home');
+
+    // Admin-only: Add Post page
+    // Use the real controller (AdminsecController) and protect with the IsAdmin middleware
+    Route::get('/add_post', [AdminsecController::class,'add_post'])
+        ->name('admin.add_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    // Admin-only: store new post (handles POST from Add Post form)
+    Route::post('/add_post', [AdminsecController::class,'store'])
+        ->name('admin.add_post.store')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+        Route::get('/show_post', [AdminsecController::class,'show_post'])->name('admin.show_post')->middleware(\App\Http\Middleware\IsAdmin::class);    
 });
