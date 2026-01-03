@@ -28,7 +28,9 @@ class AdminController extends Controller
     // Public homepage (GitHub HTML template)
     public function homepage()
     {
-        return view('home.homepage');
+        // Load posts and pass as $posts to the homepage (used by included services view)
+        $posts = \App\Models\Post::all();
+        return view('home.homepage', compact('posts'));
     }
 
     // Show admin registration form (reuses auth.register view)
@@ -54,4 +56,6 @@ class AdminController extends Controller
 
         return redirect()->route('admin.index')->with('status', 'User created successfully.');
     }
+    
+    
 }

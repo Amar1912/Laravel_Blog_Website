@@ -63,12 +63,6 @@
             border-bottom: none;
         }
 
-        .table tbody tr:hover {
-            background-color: #3a3d42;
-            transform: scale(1.01);
-            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
-        }
-
         .table td {
             color: #e0e0e0;
             font-size: 13px;
@@ -90,9 +84,6 @@
             color: white;
         }
 
-        .table tr:hover {
-            background-color: #f1f1f1;
-        }
     </style>
     <!-- Tweaks for older IEs--><!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -110,7 +101,7 @@
       
       <div class="page-content">
        <h1 class="post_title">Show Post</h1>
-            <div class="table-responsive">
+            <div class="table-responsive" style="margin: 50px; text-wrap: wrap;" >
                 <table class="table table-striped table-hover">
                     <thead class="thead-dark">
                         <tr>
@@ -121,6 +112,8 @@
                             <th>Author</th>
                             <th>post status</th>
                             <th>Usertype</th>
+                            <th>Delete</th>
+                            <th>Edit</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -133,8 +126,17 @@
                                 <td>{{ $post->name }}</td>
                                 <td>{{ $post->post_status }}</td>
                                 <td>{{ $post->usertype }}</td>
-                                <td>{{ $post->created_at->format('M d, Y') }}</td>
-                                
+                                <td>
+                                    <form action="{{ route('admin.delete_post', $post->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this post?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="{{ route('admin.edit_post', $post->id) }}" class="btn btn-primary">Edit</a>
+                                </td>
+                                 
                             </tr>
                         @empty
                             <tr>

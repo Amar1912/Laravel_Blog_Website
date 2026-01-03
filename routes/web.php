@@ -50,5 +50,9 @@ Route::middleware([
         ->name('admin.add_post.store')
         ->middleware(\App\Http\Middleware\IsAdmin::class);
 
-        Route::get('/show_post', [AdminsecController::class,'show_post'])->name('admin.show_post')->middleware(\App\Http\Middleware\IsAdmin::class);    
+        Route::get('/show_post', [AdminsecController::class,'show_post'])->name('admin.show_post')->middleware(\App\Http\Middleware\IsAdmin::class);  
+        Route::delete('/delete_post/{id}', [AdminsecController::class,'delete_post'])->name('admin.delete_post')->middleware(\App\Http\Middleware\IsAdmin::class);
+        Route::get('/edit_post/{id}', [AdminsecController::class,'edit_post'])->name('admin.edit_post')->middleware(\App\Http\Middleware\IsAdmin::class);
+        Route::put('/edit_post/{id}', [AdminsecController::class,'update_post'])->name('admin.update_post')->middleware(\App\Http\Middleware\IsAdmin::class);
+        Route::post('/update/{id}', [AdminsecController::class,'update'])->name('admin.update')->middleware(\App\Http\Middleware\IsAdmin::class);
 });
