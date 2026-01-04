@@ -5,57 +5,77 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Actions\Fortify\CreateNewUser;
-
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Post;
 
 class AdminController extends Controller
 {
-    // Redirect after login based on role
+    // Login redirect handler
     public function index()
     {
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        // NOTE: This method is used as a login redirect handler.
-        // Previous behavior differentiated admin vs normal users and redirected to different dashboards.
-        // Current behavior: send authenticated users (both admin and normal) to the public homepage
-        // ('home.homepage') so the header/menu logic can consistently show Logout and hide Login/Register.
         return redirect()->route('home.homepage');
     }
 
-    // Public homepage (GitHub HTML template)
+    // Public homepage (blog list)
     public function homepage()
     {
-        // Load posts and pass as $posts to the homepage (used by included services view)
-        $posts = \App\Models\Post::all();
+        $posts = Post::latest()->get();
         return view('home.homepage', compact('posts'));
     }
 
-    // Show admin registration form (reuses auth.register view)
-    public function showRegister()
+    // Public blog details page
+    public function post_details($id)
     {
-        return view('auth.register', ['action' => route('admin.register.store')]);
+        $post = Post::findOrFail($id);
+        return view('home.post_details', compact('post'));
     }
 
-    // Handle admin creating a new user
+    // Admin creates new user
+    public function showRegister()
+    {
+        return view('auth.register', [
+            'action' => route('admin.register.store')
+        ]);
+    }
+
     public function register(Request $request)
     {
-        $data = $request->all();
-
-        // Use the Fortify CreateNewUser action to validate and create
         $creator = new CreateNewUser();
-        $user = $creator->create($data);
+        $user = $creator->create($request->all());
 
-        // Optionally set default usertype if provided
-        if (isset($data['usertype'])) {
-            $user->usertype = $data['usertype'];
+        if ($request->has('usertype')) {
+            $user->usertype = $request->usertype;
             $user->save();
         }
 
-        return redirect()->route('admin.index')->with('status', 'User created successfully.');
+        return redirect()->route('admin.index')
+            ->with('status', 'User created successfully.');
     }
-    
-    
+
+    public function create_post()
+    {
+        return view('home.create_post');
+    }
+
+    public function user_post(Request $request)
+    {
+        $post = new Post();
+
+        $post->title = $request->title;
+        $post->description = $request->description;
+        $image = $request->image;
+        if ($image) {
+            $imagename = time() . '.' . $image->getClientOriginalExtension();
+            $request->image = move('posts', $imagename);
+            $post->image = $imagename;
+        }
+
+        $post->save();
+
+        return redirect()->back();
+    }
 }

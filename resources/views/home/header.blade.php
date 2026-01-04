@@ -56,6 +56,7 @@
 
                      @auth
                         {{-- Authenticated users (both normal users and admins) see only Logout --}}
+                        <li><a href="{{ url('create_post') }}">Create Post</a></li>
                         <li>
                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:inline;">
                               @csrf
