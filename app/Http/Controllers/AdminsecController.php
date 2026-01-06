@@ -61,7 +61,7 @@ class AdminsecController extends Controller
     {
         $posts = Post::all();
         return view('admin.show_post', compact('posts'));
-    } 
+    }
     public function delete_post($id)
     {
         \Log::info('delete_post called', ['id' => $id, 'user_id' => Auth::id()]);
@@ -95,7 +95,7 @@ class AdminsecController extends Controller
     public function edit_post($id)
     {
         $post = Post::find($id);
-        
+
         return view('admin.edit_post', compact('post'));
     }
 
@@ -104,7 +104,7 @@ class AdminsecController extends Controller
         \Log::info('update_post called', ['id' => $id, 'user_id' => Auth::id(), 'input' => $request->except('image')]);
 
         $post = Post::find($id);
-        if (! $post) {
+        if (!$post) {
             \Log::warning('Post not found for update', ['id' => $id, 'user_id' => Auth::id()]);
             return redirect()->route('admin.show_post')->withErrors('Post not found.');
         }
@@ -132,7 +132,7 @@ class AdminsecController extends Controller
                     } else {
                         $candidates[] = $normalized; // for storage disk checks
                         $candidates[] = public_path($normalized); // public/posts/...
-                        $candidates[] = public_path('storage/'.$normalized); // public/storage/posts/...
+                        $candidates[] = public_path('storage/' . $normalized); // public/storage/posts/...
                     }
 
                     $deleted = false;
@@ -158,7 +158,7 @@ class AdminsecController extends Controller
                         }
                     }
 
-                    if (! $deleted) {
+                    if (!$deleted) {
                         \Log::info('No old image file found to delete during update', ['original' => $oldPath, 'checks' => $candidates]);
                     }
                 }
@@ -171,7 +171,7 @@ class AdminsecController extends Controller
                 $filename = time() . '.' . $file->getClientOriginalExtension();
                 $moved = $file->move(public_path('posts'), $filename);
 
-                if (! $moved || ! File::exists(public_path('posts/'.$filename))) {
+                if (!$moved || !File::exists(public_path('posts/' . $filename))) {
                     throw new \Exception('Failed to move uploaded image to public/posts');
                 }
 
@@ -192,19 +192,36 @@ class AdminsecController extends Controller
 
         return redirect()->route('admin.show_post')->with('status', 'Post updated successfully.');
     }
-    public function update(Request $request,$id)
+    public function approve_post($id)
+    {
+        $post = Post::findOrFail($id);
+        $post->post_status = 'approved';
+        $post->save();
+
+        return back()->with('status', 'Post approved successfully');
+    }
+
+    public function reject_post($id)
+    {
+        $post = Post::findOrFail($id);
+        $post->post_status = 'rejected';
+        $post->save();
+
+        return back()->with('status', 'Post rejected');
+    }
+
+    public function update(Request $request, $id)
     {
         $post = Post::find($id);
         $post->title = $request->title;
         $post->description = $request->description;
         $image = $request->file('image');
-        if($image)
-        {
-            $imageName = time().'.'.$image->getClientOriginalExtension();
+        if ($image) {
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('posts'), $imageName);
-            $post->image = 'posts/'.$imageName;
-        }   
+            $post->image = 'posts/' . $imageName;
+        }
         $post->save();
-        return redirect()->route('admin.show_post')->with('status', 'Post updated successfully.');  
-    } 
+        return redirect()->route('admin.show_post')->with('status', 'Post updated successfully.');
+    }
 }

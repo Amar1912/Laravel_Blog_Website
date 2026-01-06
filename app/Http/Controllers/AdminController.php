@@ -2,60 +2,129 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Actions\Fortify\CreateNewUser;
-
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Post;
 use App\Models\User;
+use App\Actions\Fortify\CreateNewUser;
 
 class AdminController extends Controller
 {
-    // Redirect after login based on role
     public function index()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        // NOTE: This method is used as a login redirect handler.
-        // Previous behavior differentiated admin vs normal users and redirected to different dashboards.
-        // Current behavior: send authenticated users (both admin and normal) to the public homepage
-        // ('home.homepage') so the header/menu logic can consistently show Logout and hide Login/Register.
         return redirect()->route('home.homepage');
     }
 
-    // Public homepage (GitHub HTML template)
     public function homepage()
     {
-        // Load posts and pass as $posts to the homepage (used by included services view)
-        $posts = \App\Models\Post::all();
+        $posts = Post::all();
         return view('home.homepage', compact('posts'));
     }
 
-    // Show admin registration form (reuses auth.register view)
-    public function showRegister()
+    public function create_post()
     {
-        return view('auth.register', ['action' => route('admin.register.store')]);
+        return view('home.create_post');
     }
 
-    // Handle admin creating a new user
-    public function register(Request $request)
+    public function store_post(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-        // Use the Fortify CreateNewUser action to validate and create
-        $creator = new CreateNewUser();
-        $user = $creator->create($data);
-
-        // Optionally set default usertype if provided
-        if (isset($data['usertype'])) {
-            $user->usertype = $data['usertype'];
-            $user->save();
+        if ($request->hasFile('image')) {
+            $filename = time().'.'.$request->image->extension();
+            $request->image->move(public_path('posts'), $filename);
+            $data['image'] = 'posts/'.$filename;
         }
 
-        return redirect()->route('admin.index')->with('status', 'User created successfully.');
+        $data['user_id'] = Auth::id();
+        $data['name'] = Auth::user()->name;
+        $data['usertype'] = Auth::user()->usertype ?? 'user';
+        $data['post_status'] = 'pending';
+
+        Post::create($data);
+
+        return back()->with('status', 'Post submitted successfully');
     }
-    
-    
+
+    public function my_posts()
+    {
+        $posts = Post::where('user_id', Auth::id())->latest()->get();
+        return view('home.my_posts', compact('posts'));
+    }
+
+    public function delete_post($id)
+    {
+        $post = Post::where('id', $id)
+                    ->where('user_id', Auth::id())
+                    ->first();
+
+        if (!$post) {
+            return back()->withErrors('Unauthorized action');
+        }
+
+        if ($post->image && file_exists(public_path($post->image))) {
+            unlink(public_path($post->image));
+        }
+
+        $post->delete();
+
+        return back()->with('status', 'Post deleted successfully');
+    }
+
+    public function postDetails($id)
+    {
+        $post = Post::findOrFail($id);
+        return view('home.postDetails', compact('post'));
+    }
+    public function edit_post($id)
+{
+    $post = Post::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
+
+    return view('home.edit_post', compact('post'));
+}
+  public function update_post(Request $request, $id)
+{
+    $post = Post::where('id', $id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+    if (!$post) {
+        return back()->withErrors('Unauthorized action');
+    }
+
+    // ✅ Validate
+    $data = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    // ✅ Image update (optional)
+    if ($request->hasFile('image')) {
+
+        // delete old image
+        if ($post->image && file_exists(public_path($post->image))) {
+            unlink(public_path($post->image));
+        }
+
+        $filename = time().'.'.$request->image->extension();
+        $request->image->move(public_path('posts'), $filename);
+        $data['image'] = 'posts/'.$filename;
+    }
+
+    // reset status after update
+    $data['post_status'] = 'pending';
+
+    $post->update($data);
+
+    return redirect()->route('user.my_posts')
+                     ->with('status', 'Post updated successfully');
+}
+
 }
