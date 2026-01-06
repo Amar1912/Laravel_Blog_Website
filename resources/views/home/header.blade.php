@@ -22,6 +22,7 @@
                         <li class="nav-item">
                            <a class="nav-link " href="contact.html">Contact</a>
                         </li>
+                        
                      </ul>
                   </div>
                </nav>
@@ -34,6 +35,7 @@
                      <li><a href="about.html">About</a></li>
                      <li><a href="services.html">Services</a></li>
                      <li><a href="blog.html">Blog</a></li>
+                     
 
                      {{--
                         Guest vs Auth menu behavior:
@@ -56,7 +58,15 @@
 
                      @auth
                         {{-- Authenticated users (both normal users and admins) see only Logout --}}
+<<<<<<< HEAD
                         <li><a href="{{ url('create_post') }}">Create Post</a></li>
+=======
+                        <li><a href="{{ route('create_post') }}">CREATE POST</a></li>
+                        <li>
+    <a href="{{ route('user.my_posts') }}">MY POSTS</a>
+</li>
+
+>>>>>>> today-broken-backup
                         <li>
                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:inline;">
                               @csrf

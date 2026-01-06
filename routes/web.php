@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminsecController;
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
+<<<<<<< HEAD
 
 // Public homepage (blogs visible)
 Route::get('/', [AdminController::class, 'homepage'])->name('home.homepage');
@@ -22,6 +23,14 @@ Route::get('/home', [AdminController::class, 'index'])->name('home');
 
 Route::get('/create_post', [AdminController::class,'create_post'])->name('home.create_post');
 Route::post('/user_post', [AdminController::class,'user_post'])->name('home.user_post');
+=======
+Route::get('/', [AdminController::class, 'homepage'])
+    ->name('home.homepage');
+
+Route::get('/postDetails/{id}', [AdminController::class, 'postDetails'])
+    ->name('post.details');
+
+>>>>>>> today-broken-backup
 /*
 |--------------------------------------------------------------------------
 | AUTHENTICATED ROUTES
@@ -33,6 +42,7 @@ Route::middleware([
     'verified',
 ])->group(function () {
 
+<<<<<<< HEAD
     // USER DASHBOARD
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -76,4 +86,77 @@ Route::middleware([
     Route::put('/edit_post/{id}', [AdminsecController::class,'update_post'])
         ->name('admin.update_post')
         ->middleware(\App\Http\Middleware\IsAdmin::class);
+=======
+    // Login redirect
+    Route::get('/home', [AdminController::class, 'index'])->name('home');
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER ROUTES
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/create_post', [AdminController::class, 'create_post'])
+        ->name('create_post');
+
+    Route::post('/create_post', [AdminController::class, 'store_post'])
+        ->name('create_post.store');
+
+    Route::get('/my_posts', [AdminController::class, 'my_posts'])
+        ->name('user.my_posts');
+
+    Route::delete('/user/delete_post/{id}', [AdminController::class, 'delete_post'])
+        ->name('user.delete_post');
+
+    Route::get('/user/edit_post/{id}', [AdminController::class, 'edit_post'])
+        ->name('user.edit_post');
+
+    Route::put('/user/update_post/{id}', [AdminController::class, 'update_post'])
+        ->name('user.update_post');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN ROUTES
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/admin', function () {
+        return view('admin.index');
+    })->name('admin.index')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    Route::get('/add_post', [AdminsecController::class, 'add_post'])
+        ->name('admin.add_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    Route::post('/add_post', [AdminsecController::class, 'store'])
+        ->name('admin.add_post.store')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    Route::get('/show_post', [AdminsecController::class, 'show_post'])
+        ->name('admin.show_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    Route::delete('/delete_post/{id}', [AdminsecController::class, 'delete_post'])
+        ->name('admin.delete_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    // ✅ ADD THESE
+    Route::get('/edit_post/{id}', [AdminsecController::class, 'edit_post'])
+        ->name('admin.edit_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    Route::put('/edit_post/{id}', [AdminsecController::class, 'update_post'])
+        ->name('admin.update_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    // APPROVE / REJECT
+    Route::put('/admin/approve_post/{id}', [AdminsecController::class, 'approve_post'])
+        ->name('admin.approve_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+    Route::put('/admin/reject_post/{id}', [AdminsecController::class, 'reject_post'])
+        ->name('admin.reject_post')
+        ->middleware(\App\Http\Middleware\IsAdmin::class);
+
+>>>>>>> today-broken-backup
 });

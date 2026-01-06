@@ -336,10 +336,10 @@ button {
 }
 
 .header_main {
-    width: 100%;
-    background-image: url(../images/header-bg.png);
-    background-size: 100%;
-    padding: 10px 0px 0px 0px;
+    background-image: url("../images/banner-bg.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: #0f0f1a; /* fallback */
 }
 
 
@@ -1012,4 +1012,9 @@ button {
 
 .copyright_text a:hover {
     color: #e27141;
+}
+.header_main,
+.navbar {
+    position: relative;
+    z-index: 9999;
 }
