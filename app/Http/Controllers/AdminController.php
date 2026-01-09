@@ -3,38 +3,34 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-<<<<<<< HEAD
+use Illuminate\Support\Facades\Auth;
 use App\Actions\Fortify\CreateNewUser;
 use App\Models\User;
 use App\Models\Post;
 
 class AdminController extends Controller
 {
-    // Login redirect handler
+    // Login redirect
     public function index()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
         return redirect()->route('home.homepage');
     }
 
-    // Public homepage (blog list)
+    // Public homepage
     public function homepage()
     {
         $posts = Post::latest()->get();
         return view('home.homepage', compact('posts'));
     }
 
-    // Public blog details page
+    // Public post details
     public function post_details($id)
     {
         $post = Post::findOrFail($id);
         return view('home.post_details', compact('post'));
     }
 
-    // Admin creates new user
+    // Show register form (admin)
     public function showRegister()
     {
         return view('auth.register', [
@@ -53,56 +49,16 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.index')
-            ->with('status', 'User created successfully.');
+            ->with('status', 'User created successfully');
     }
 
+    // Create post (user)
     public function create_post()
     {
         return view('home.create_post');
     }
 
     public function user_post(Request $request)
-    {
-        $post = new Post();
-
-        $post->title = $request->title;
-        $post->description = $request->description;
-        $image = $request->image;
-        if ($image) {
-            $imagename = time() . '.' . $image->getClientOriginalExtension();
-            $request->image = move('posts', $imagename);
-            $post->image = $imagename;
-        }
-
-        $post->save();
-
-        return redirect()->back();
-    }
-=======
-use Illuminate\Support\Facades\Auth;
-use App\Models\Post;
-use App\Models\User;
-use App\Actions\Fortify\CreateNewUser;
-
-class AdminController extends Controller
-{
-    public function index()
-    {
-        return redirect()->route('home.homepage');
-    }
-
-    public function homepage()
-    {
-        $posts = Post::all();
-        return view('home.homepage', compact('posts'));
-    }
-
-    public function create_post()
-    {
-        return view('home.create_post');
-    }
-
-    public function store_post(Request $request)
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
@@ -126,21 +82,22 @@ class AdminController extends Controller
         return back()->with('status', 'Post submitted successfully');
     }
 
+    // My posts
     public function my_posts()
     {
-        $posts = Post::where('user_id', Auth::id())->latest()->get();
+        $posts = Post::where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
         return view('home.my_posts', compact('posts'));
     }
 
+    // Delete post (user)
     public function delete_post($id)
     {
         $post = Post::where('id', $id)
-                    ->where('user_id', Auth::id())
-                    ->first();
-
-        if (!$post) {
-            return back()->withErrors('Unauthorized action');
-        }
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
         if ($post->image && file_exists(public_path($post->image))) {
             unlink(public_path($post->image));
@@ -151,57 +108,46 @@ class AdminController extends Controller
         return back()->with('status', 'Post deleted successfully');
     }
 
-    public function postDetails($id)
-    {
-        $post = Post::findOrFail($id);
-        return view('home.postDetails', compact('post'));
-    }
+    // Edit post (user)
     public function edit_post($id)
-{
-    $post = Post::where('id', $id)
-                ->where('user_id', Auth::id())
-                ->firstOrFail();
+    {
+        $post = Post::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
-    return view('home.edit_post', compact('post'));
-}
-  public function update_post(Request $request, $id)
-{
-    $post = Post::where('id', $id)
-                ->where('user_id', Auth::id())
-                ->first();
-
-    if (!$post) {
-        return back()->withErrors('Unauthorized action');
+        return view('home.edit_post', compact('post'));
     }
 
-    // ✅ Validate
-    $data = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'required|string',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    ]);
+    // Update post (user)
+    public function update_post(Request $request, $id)
+    {
+        $post = Post::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
-    // ✅ Image update (optional)
-    if ($request->hasFile('image')) {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-        // delete old image
-        if ($post->image && file_exists(public_path($post->image))) {
-            unlink(public_path($post->image));
+        if ($request->hasFile('image')) {
+
+            if ($post->image && file_exists(public_path($post->image))) {
+                unlink(public_path($post->image));
+            }
+
+            $filename = time().'.'.$request->image->extension();
+            $request->image->move(public_path('posts'), $filename);
+            $data['image'] = 'posts/'.$filename;
         }
 
-        $filename = time().'.'.$request->image->extension();
-        $request->image->move(public_path('posts'), $filename);
-        $data['image'] = 'posts/'.$filename;
+        $data['post_status'] = 'pending';
+
+        $post->update($data);
+
+        // ✅ FIXED ROUTE NAME
+        return redirect()->route('home.my_posts')
+            ->with('status', 'Post updated successfully');
     }
-
-    // reset status after update
-    $data['post_status'] = 'pending';
-
-    $post->update($data);
-
-    return redirect()->route('user.my_posts')
-                     ->with('status', 'Post updated successfully');
-}
-
->>>>>>> today-broken-backup
 }

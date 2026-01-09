@@ -100,7 +100,7 @@
       <!-- Page Content -->
       <div class="page-content p-4 w-100">
          
-                  <form action="{{ route('admin.update', $post->id) }}" method="POST" enctype="multipart/form-data">
+                  <form action="{{ route('admin.update_post', $post->id) }}" method="POST" enctype="multipart/form-data">
 
                       @csrf
                     <div class="div_center">
